@@ -42,10 +42,8 @@ def get_youtube_comments(video_id, max_results=50):
 # -------------------------
 # Sentiment Prediction
 # -------------------------
-def predict_sentiment(comments):
-    X = vectorizer.transform(comments)
-    predictions = model.predict(X)
-    return predictions
+def predict_sentiment(text_list):
+    return model.predict(text_list)
 
 
 # -------------------------
@@ -89,11 +87,17 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file)
     st.session_state.df = df
     st.success(f"Uploaded file with {len(df)} comments.")
-
-# 3️⃣ Run Sentiment Analysis
+    # 3️⃣ Run Sentiment Analysis
 if "df" in st.session_state and st.button("Run Sentiment Analysis"):
     df = st.session_state.df
-    predictions = predict_sentiment(df["comment"])
+
+    # Clean comments before sentiment prediction
+    df["clean_comment"] = (
+        df["comment"].str.replace(r"[^A-Za-z\s]", "", regex=True).str.lower()
+    )
+
+    # Run prediction
+    predictions = predict_sentiment(df["clean_comment"])
     df["sentiment"] = predictions
 
     st.write("### Sentiment Results")
